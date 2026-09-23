@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# kinesis-cars — production static site behind Traefik (nginx).
+#
+# Deployed by the .gitea workflow: the image is built in CI, pushed to the
+# Gitea registry and pulled here. The compose image must match
+# `${{ vars.REPO_ORIGIN }}/${{ gitea.repository }}:latest`.
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  kinesis-cars:
+    container_name: "kinesis-cars"
+    image: "${CARS_IMAGE:-gitea.konnect.dev/astro/kinesis-cars:latest}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SITE_HOST: "${SITE_HOST:-cars.kinesis.world}"
+        SITE_SCHEME: "${SITE_SCHEME:-https}"
+        BASE: "${BASE:-/}"
+        PUBLIC_API_URL: "${PUBLIC_API_URL:-https://api.kinesis.world/x/cars/}"
+        PUBLIC_MEDIA_ORIGIN: "${PUBLIC_MEDIA_ORIGIN:-https://api.kinesis.world}"
+        PUBLIC_UPLOAD_ORIGIN: "${PUBLIC_UPLOAD_ORIGIN:-}"
+    network_mode: "bridge"
+    restart: "always"
+    environment:
+      SITE_HOST: "${SITE_HOST:-cars.kinesis.world}"
+      SITE_SCHEME: "${SITE_SCHEME:-https}"
+      SERVER_NAMES: "${SERVER_NAMES:-cars.kinesis.world}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.kinesis-cars-service-http.entrypoints: "http"
+      traefik.http.routers.kinesis-cars-service-http.rule: "Host(`cars.kinesis.world`)"
+      traefik.http.routers.kinesis-cars-service-http.middlewares: "https_redirect@file"
+      traefik.http.routers.kinesis-cars-service-https.entrypoints: "https"
+      traefik.http.routers.kinesis-cars-service-https.rule: "Host(`cars.kinesis.world`)"
+      traefik.http.routers.kinesis-cars-service-https.tls.certResolver: "acme-http"
+      traefik.http.services.kinesis-cars-service-https.loadbalancer.server.port: "80"

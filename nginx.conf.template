@@ -1,0 +1,71 @@
+# Nginx config template (processed with envsubst by the official nginx image).
+#
+# Env vars (set via docker-compose / .env):
+#   SITE_HOST       Canonical hostname, e.g. cars.kinesis.world
+#   SITE_SCHEME     Scheme for the canonical site, e.g. https
+#   SERVER_NAMES    Space-separated hostnames (canonical + any alternates that
+#                   should 301-redirect to the canonical site)
+
+server {
+    listen 80;
+    server_name ${SERVER_NAMES};
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # 301-redirect any alternate host to the canonical HTTPS site
+    if ($host != "${SITE_HOST}") {
+        return 301 ${SITE_SCHEME}://${SITE_HOST}$request_uri;
+    }
+
+    # ── Explicit MIME types ────────────────────────────────────────────────
+    # Guarantees .js/.mjs/.css assets are served with the correct Content-Type
+    # (e.g. `text/javascript`, never `text/plain`) even if the base image's
+    # mime.types is missing or overridden. Modules are blocked otherwise.
+    types {
+        text/html                     html htm;
+        text/css                      css;
+        text/javascript               js mjs;
+        application/json              json map;
+        image/svg+xml                 svg;
+        image/png                     png;
+        image/webp                    webp;
+        image/x-icon                  ico;
+        font/woff2                    woff2;
+        font/woff                     woff;
+        application/wasm              wasm;
+        application/pdf               pdf;
+        text/plain                    txt;
+    }
+    default_type application/octet-stream;
+
+    # Hashed build assets (immutable) — cache aggressively
+    location /_astro/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Media uploads are proxied same-origin: the API doesn't send
+    # `Access-Control-Allow-Origin`, so the browser posts to `/upload` on this
+    # host and nginx forwards to the API (PUBLIC_UPLOAD_ORIGIN="" in prod).
+    location /upload {
+        proxy_pass https://api.kinesis.world;
+        proxy_set_header Host api.kinesis.world;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 50m;
+    }
+
+    # SPA-ish fallback: /foo → /foo.html, otherwise the custom 404 page
+    location / {
+        try_files $uri $uri/ $uri.html =404;
+    }
+
+    # Serve custom Kinesis Cars 404 page on 404 error status
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+}

@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+	themes: false;
+}
+
+/*
+ * ── Kinesis daisyUI theme ──────────────────────────────────────────────────
+ * This is the theme config for daisyUI 5. Unlike daisyUI 3, there is no JS
+ * config file — colors are customized here in CSS. Tweak any `--color-*`
+ * value below to restyle the whole site.
+ *
+ *   btn-primary        → --color-primary / --color-primary-content
+ *   btn-error          → --color-error   / --color-error-content   (softened
+ *                        so destructive buttons aren't too bright)
+ *   form/input borders → --color-base-*
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+@plugin "daisyui/theme" {
+	name: "kinesis";
+	default: true;
+	color-scheme: dark;
+	--color-base-100: oklch(0.15 0.012 260);
+	--color-base-200: oklch(0.19 0.014 260);
+	--color-base-300: oklch(0.25 0.016 260);
+	--color-base-content: oklch(0.93 0.006 260);
+	--color-primary: #9582F2;
+	--color-primary-content: #1e1b4b;
+	--color-secondary: #ad9cf5;
+	--color-secondary-content: #1e1b4b;
+	--color-accent: #c6b6f8;
+	--color-accent-content: #1e1b4b;
+	--color-neutral: oklch(0.24 0.016 260);
+	--color-neutral-content: oklch(0.93 0.006 260);
+	--color-info: oklch(0.7 0.12 240);
+	--color-info-content: oklch(0.17 0.02 240);
+	--color-success: oklch(0.72 0.14 150);
+	--color-success-content: oklch(0.17 0.02 150);
+	--color-warning: oklch(0.78 0.13 80);
+	--color-warning-content: oklch(0.17 0.02 80);
+	--color-error: oklch(0.62 0.16 27);
+	--color-error-content: oklch(0.98 0.005 27);
+	--radius-selector: 0.75rem;
+	--radius-field: 0.75rem;
+	--radius-box: 1.5rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 1;
+	--noise: 0;
+}
+
+@theme {
+	--font-sans:
+		"Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, sans-serif;
+	--color-brand-50: #f5f3fe;
+	--color-brand-100: #ece7fd;
+	--color-brand-200: #dcd2fb;
+	--color-brand-300: #c6b6f8;
+	--color-brand-400: #ad9cf5;
+	--color-brand-500: #9582F2;
+	--color-brand-600: #7d65e8;
+	--color-brand-700: #6a51d2;
+}
+
+html {
+	scroll-behavior: smooth;
+	/* Reserve space for the scrollbar so pages don't shift horizontally
+	   when content loads and the scrollbar appears/disappears. */
+	scrollbar-gutter: stable;
+}
+
+body {
+	@apply bg-slate-950 text-slate-200 antialiased;
+}

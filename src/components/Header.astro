@@ -1,0 +1,20 @@
+---
+import AuthNav from './react/AuthNav.tsx';
+---
+<header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur">
+	<nav class="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6" aria-label="Primary">
+		<a href="/" class="flex w-fit items-center gap-2.5">
+			<img src="/favicon.svg" alt="Kinesis Cars" width="28" height="28" class="h-7 w-7 rounded-lg" />
+			<span class="text-lg font-semibold tracking-tight text-white">Kinesis<span class="text-brand-500">Cars</span></span>
+		</a>
+
+		<div class="hidden items-center gap-6 justify-self-center text-sm font-medium text-slate-300 md:flex">
+			<a href="/browse" class="transition hover:text-white">Browse cars</a>
+			<a href="/register" class="transition hover:text-white">For merchants</a>
+		</div>
+
+		<div class="justify-self-end">
+			<AuthNav client:load />
+		</div>
+	</nav>
+</header>

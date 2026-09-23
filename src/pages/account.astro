@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AccountPanel from '../components/react/AccountPanel.tsx';
+---
+<Layout title="Your account — Kinesis Cars" description="View your profile and security settings on Kinesis Cars.">
+	<Fragment slot="head">
+		<script is:inline>
+			// The account page requires a session (JWT stored in localStorage by
+			// AppContext). Redirect to sign in before the page renders otherwise.
+			try {
+				if (!localStorage.getItem('kinesis.auth')) {
+					window.location.replace('/login?next=/account');
+				}
+			} catch (e) {
+				/* ignore */
+			}
+		</script>
+	</Fragment>
+	<section class="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+		<AccountPanel client:load />
+	</section>
+</Layout>

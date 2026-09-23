@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ResetPassword from '../../components/react/ResetPassword.tsx';
+---
+<Layout title="Reset password — Kinesis Cars" description="Choose a new password for your Kinesis Cars account.">
+	<section class="mx-auto flex max-w-6xl px-4 py-16 sm:px-6">
+		<div class="mx-auto w-full max-w-md">
+			<div class="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+				<a href="/" class="mb-8 flex items-center justify-center gap-2.5">
+					<img src="/favicon.svg" alt="Kinesis Cars" width="28" height="28" class="h-7 w-7 rounded-lg" />
+					<span class="text-lg font-semibold tracking-tight text-white">Kinesis<span class="text-brand-500">Cars</span></span>
+				</a>
+
+				<h1 class="text-center text-2xl font-bold tracking-tight text-white">Reset password</h1>
+				<p class="mt-2 text-center text-sm text-slate-400">Choose a new password for your account.</p>
+
+				<ResetPassword client:load />
+			</div>
+		</div>
+	</section>
+</Layout>

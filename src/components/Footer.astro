@@ -1,0 +1,49 @@
+---
+import ApiBadge from './react/ApiBadge.tsx';
+---
+<footer class="border-t border-white/10 bg-slate-900/50">
+	<div class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+		<div class="grid gap-10 md:grid-cols-4">
+			<div class="space-y-4 md:col-span-2">
+				<a href="/" class="flex items-center gap-2.5">
+					<img src="/favicon.svg" alt="Kinesis Cars" width="28" height="28" class="h-7 w-7 rounded-lg" />
+					<span class="text-lg font-semibold tracking-tight text-white">Kinesis<span class="text-brand-500">Cars</span></span>
+				</a>
+				<p class="max-w-sm text-sm leading-relaxed text-slate-400">
+					The car booking &amp; fleet management platform. Rent verified vehicles from trusted
+					merchants, or manage your fleet in one place.
+				</p>
+				<ApiBadge client:load />
+			</div>
+
+			<div>
+				<h3 class="text-sm font-semibold text-white">Platform</h3>
+				<ul class="mt-4 space-y-3 text-sm text-slate-400">
+					<li><a href="/browse" class="transition hover:text-white">Browse cars</a></li>
+					<li><a href="/register" class="transition hover:text-white">List your fleet</a></li>
+					<li><a href="/login" class="transition hover:text-white">Sign in</a></li>
+				</ul>
+			</div>
+
+			<div>
+				<h3 class="text-sm font-semibold text-white">Company</h3>
+				<ul class="mt-4 space-y-3 text-sm text-slate-400">
+					<li><a href="/" class="transition hover:text-white">About</a></li>
+					<li><a href="/" class="transition hover:text-white">Contact</a></li>
+					<li><a href="/" class="transition hover:text-white">Terms</a></li>
+					<li><a href="/" class="transition hover:text-white">Privacy</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="mt-10 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center">
+			<p>© {new Date().getFullYear()} Kinesis Cars. All rights reserved.</p>
+			<p class="flex items-center gap-1.5 text-sm text-slate-500">
+				Powered by
+				<a href="https://api.kinesis.world" target="_blank" rel="noopener noreferrer" class="transition hover:opacity-80 mb-3">
+					<img src="https://api.kinesis.world/static/banner.png" alt="Kinesis API" class="h-8 w-auto" />
+				</a>
+			</p>
+		</div>
+	</div>
+</footer>

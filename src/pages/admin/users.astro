@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import AdminUsers from '../../components/react/AdminUsers.tsx';
+---
+<Layout title="Admin — Kinesis Cars" description="Manage users on the Kinesis Cars platform.">
+	<Fragment slot="head">
+		<script is:inline>
+			// The admin area requires a session. Redirect to sign in first.
+			try {
+				if (!localStorage.getItem('kinesis.auth')) {
+					window.location.replace('/login?next=/admin/users');
+				}
+			} catch (e) {
+				/* ignore */
+			}
+		</script>
+	</Fragment>
+	<section class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+		<AdminUsers client:load />
+	</section>
+</Layout>

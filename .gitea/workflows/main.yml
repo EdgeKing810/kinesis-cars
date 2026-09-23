@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Gitea Actions pipeline — Build docker image and deploy
+#
+# Adapted from the `kinesis-api` project for the `kinesis-cars` portfolio:
+#   1. Checks out the repository on the docker runner,
+#   2. Builds the production image (Dockerfile) and pushes it to the Gitea
+#      container registry,
+#   3. SSHes into the server, injects the compose secret, copies the compose
+#      file, pulls the fresh image and recreates the `kinesis-cars`
+#      service (nginx behind Traefik).
+#
+# Required repository VARIABLES (Gitea > Settings > Variables):
+#   DOMAIN_NAME       Registry/gitea host, e.g. gitea.konnect.dev
+#   SERVER_ADDRESS    SSH host running docker compose
+#   SERVER_USERNAME   SSH user on the server (e.g. worker)
+#   REPO_ORIGIN       Registry host used by `docker pull` (e.g. gitea.konnect.dev)
+#
+# Required repository SECRETS (Gitea > Settings > Secrets):
+#   CLONE_TOKEN           Token used to clone this repository on the runner
+#   CI_BUILD_TOKEN        Token to login to the container registry
+#   CI_REGISTRY_USER      Registry username
+#   WORKER_SSH_PRIVATE_KEY  SSH private key for the deploy user
+#
+# NOTE: the compose image must match `${{ vars.REPO_ORIGIN }}/${{ gitea.repository }}:latest`
+# (adjust the default in docker-compose.yml if the registry/owner differs).
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build docker image and deploy
+run-name: Build docker image and deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  DOCKER_JOB_ID: kinesis-cars
+
+jobs:
+  docker-build:
+    name: Docker build and push
+    runs-on: docker-29.1-dind
+    defaults:
+      run:
+        shell: sh
+    steps:
+      - name: Check out repository code
+        run: |
+          apk update
+          apk add git
+          git init
+          git remote add origin 'https://${{ secrets.CLONE_TOKEN }}@${{ vars.DOMAIN_NAME }}/${{ gitea.repository }}.git'
+          git fetch --all
+          BRANCH=$(echo ${{ gitea.ref }} | sed 's/refs\/heads\///')
+          git pull --set-upstream origin $BRANCH
+          git checkout $BRANCH
+      - name: Docker info
+        run: docker info
+      - name: Docker login
+        run: echo ${{ secrets.CI_BUILD_TOKEN }} | docker login -u "${{ secrets.CI_REGISTRY_USER }}" --password-stdin https://${{ vars.DOMAIN_NAME }}
+      - name: Docker build
+        run: docker build --pull -t "${{ vars.DOMAIN_NAME }}/${{ gitea.repository }}:latest" -f Dockerfile .
+      - name: Docker push
+        run: docker push "${{ vars.DOMAIN_NAME }}/${{ gitea.repository }}:latest"
+
+  deploy:
+    name: Deploy on server
+    runs-on: ubuntu-22.04
+    needs: docker-build
+    steps:
+      - name: Install openssh-client
+        run: |
+          apt update -qy
+          apt install -y openssh-client
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.WORKER_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ vars.SERVER_ADDRESS }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Rebuild containers
+        run: |
+          scp docker-compose.yml ${{ vars.SERVER_USERNAME }}@${{ vars.SERVER_ADDRESS }}:/tmp/docker-compose.yml
+
+          ssh ${{ vars.SERVER_USERNAME }}@${{ vars.SERVER_ADDRESS }} "
+            cd /tmp &&
+            docker compose down &&
+            docker pull ${{ vars.REPO_ORIGIN }}/${{ gitea.repository }}:latest &&
+            docker compose up -d &&
+            rm -f docker-compose.yml
+          "
