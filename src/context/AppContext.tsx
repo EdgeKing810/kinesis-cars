@@ -181,6 +181,31 @@ export interface UserDeleteResponse extends ApiEnvelope {
 	id: string;
 }
 
+/** A fleet groups several vehicles (owned by a merchant/admin). */
+export interface Fleet {
+	id: string;
+	owner_id: string;
+	name: string;
+	agency: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+/** Response of POST /fleet/create, PUT /fleet/update and DELETE /fleet/delete. */
+export interface FleetMutationResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+}
+
+/** Response of GET /fleet/fetch (public). */
+export interface FleetFetchResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	fleets: Fleet[];
+	amount: number;
+}
+
 function normalizeBaseUrl(raw: string): string {
 	const trimmed = raw.trim();
 	return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;

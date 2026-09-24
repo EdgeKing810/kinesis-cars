@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FleetsManager from '../components/react/FleetsManager.tsx';
+---
+<Layout title="Fleets — Kinesis Cars" description="Create and manage your vehicle fleets.">
+	<Fragment slot="head">
+		<script is:inline>
+			// Requires a session to manage fleets.
+			try {
+				if (!localStorage.getItem('kinesis.auth')) {
+					window.location.replace('/login?next=/fleets');
+				}
+			} catch (e) {
+				/* ignore */
+			}
+		</script>
+	</Fragment>
+	<section class="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+		<FleetsManager client:load />
+	</section>
+</Layout>
