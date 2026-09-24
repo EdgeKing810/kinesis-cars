@@ -1,0 +1,9 @@
+---
+import Layout from '../layouts/Layout.astro';
+import VehicleDetails from '../components/react/VehicleDetails.tsx';
+---
+<Layout title="Vehicle — Kinesis Cars" description="View the full details of a vehicle.">
+	<section class="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+		<VehicleDetails client:load />
+	</section>
+</Layout>

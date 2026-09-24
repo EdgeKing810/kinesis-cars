@@ -333,19 +333,31 @@ function AccountPanelInner() {
         </section>
       )}
 
-      {(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Fleets</h2>
-            <p className="mt-1 text-sm text-slate-400">Group your vehicles into fleets for easy management.</p>
-          </div>
-          <a href="/fleets" className="btn btn-primary">
-            Manage fleets
-          </a>
-        </section>
-      )}
+{(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
+				<section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+					<div>
+						<h2 className="text-lg font-semibold text-white">Fleets</h2>
+						<p className="mt-1 text-sm text-slate-400">Group your vehicles into fleets for easy management.</p>
+					</div>
+					<a href="/fleets" className="btn btn-primary">
+						Manage fleets
+					</a>
+				</section>
+			)}
 
-      {/* Security / two-factor */}
+			{(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
+				<section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+					<div>
+						<h2 className="text-lg font-semibold text-white">Vehicles</h2>
+						<p className="mt-1 text-sm text-slate-400">List, add and manage the vehicles in your fleet.</p>
+					</div>
+					<a href="/vehicles" className="btn btn-primary">
+						Manage vehicles
+					</a>
+				</section>
+			)}
+
+			{/* Security / two-factor */}
       <section className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
         <h2 className="text-lg font-semibold text-white">Security</h2>
 

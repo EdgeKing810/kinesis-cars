@@ -206,6 +206,50 @@ export interface FleetFetchResponse extends ApiEnvelope {
 	amount: number;
 }
 
+/** A vehicle listing. */
+export interface Vehicle {
+	id: string;
+	owner_id: string;
+	fleet_id: string;
+	nickname: string;
+	car_make: string;
+	model: string;
+	body_type: string;
+	color: string;
+	doors: number;
+	seats: number;
+	transmission: string;
+	fuel_type: string;
+	mileage_km: number;
+	registration: string;
+	price_per_day_cents: number;
+	min_rent_days: number;
+	max_rent_days: number;
+	location: string;
+	license_plate: string;
+	options: string[];
+	additional: string[];
+	pictures: string[];
+	is_active: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+/** Response of POST /vehicle/create and PUT /vehicle/update. */
+export interface VehicleMutationResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+}
+
+/** Response of GET /vehicle/fetch (public). NOTE: the array key is `fleets`. */
+export interface VehicleFetchResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	fleets: Vehicle[];
+	amount: number;
+}
+
 function normalizeBaseUrl(raw: string): string {
 	const trimmed = raw.trim();
 	return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;

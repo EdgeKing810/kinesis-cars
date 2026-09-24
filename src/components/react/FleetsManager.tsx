@@ -147,7 +147,7 @@ function FleetsManagerInner() {
 		}
 	}
 
-	if (!auth) {
+	if (ready && !checking && !auth) {
 		return (
 			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
 				<h1 className="text-2xl font-bold tracking-tight text-white">Fleets</h1>
