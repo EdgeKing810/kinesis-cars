@@ -242,11 +242,90 @@ export interface VehicleMutationResponse extends ApiEnvelope {
 	id: string;
 }
 
-/** Response of GET /vehicle/fetch (public). NOTE: the array key is `fleets`. */
+/** Response of GET /vehicle/fetch (public). */
 export interface VehicleFetchResponse extends ApiEnvelope {
 	status: number;
 	message: string;
-	fleets: Vehicle[];
+	vehicles: Vehicle[];
+	amount: number;
+}
+
+/** A blockout period for a vehicle. */
+export interface Blockout {
+	id: string;
+	vehicle_id: string;
+	start_date: string;
+	end_date: string;
+	reason: 'BOOKING' | 'MAINTENANCE' | 'FLEET_HOLD' | 'UNAVAILABLE';
+	booking_id: string;
+	note: string;
+	created_at?: string;
+}
+
+/** Response of POST /blockout/create and DELETE /blockout/delete. */
+export interface BlockoutMutationResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+}
+
+/** Response of GET /blockout/fetch. */
+export interface BlockoutFetchResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	blockouts: Blockout[];
+	amount: number;
+}
+
+/** Financial breakdown of a booking (MUR, cents). */
+export interface FinancialSnapshot {
+	daily_rate_cents: number;
+	total_days: number;
+	subtotal_cents: number;
+	insurance_fee_cents: number;
+	deposit_cents: number;
+	tax_cents: number;
+	total_amount_cents: number;
+	currency: string;
+}
+
+/** A vehicle booking. */
+export interface Booking {
+	id: string;
+	client_id: string;
+	vehicle_id: string;
+	merchant_id: string;
+	start_date: string;
+	end_date: string;
+	pickup_location: string;
+	dropoff_location: string;
+	status: 'PENDING_PAYMENT' | 'CONFIRMED' | 'CHECKED_OUT' | 'CHECKED_IN' | 'CANCELLED' | 'REFUNDED' | 'COMPLETED';
+	financial_snapshot: FinancialSnapshot;
+	created_at?: string;
+	updated_at?: string;
+}
+
+/** Response of POST /booking/create. */
+export interface BookingCreateResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+	financial_snapshot?: FinancialSnapshot;
+}
+
+/** Response of PATCH /booking/status and PATCH /booking/cancel. */
+export interface BookingMutationResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+	new_status?: string;
+}
+
+/** Response of GET /booking/fetch. */
+export interface BookingFetchResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	bookings: Booking[];
 	amount: number;
 }
 

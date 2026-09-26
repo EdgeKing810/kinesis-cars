@@ -312,11 +312,23 @@ function AccountPanelInner() {
       {profile && (
         <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
           <div>
+            <h2 className="text-lg font-semibold text-white">Bookings</h2>
+            <p className="mt-1 text-sm text-slate-400">View and manage your vehicle bookings.</p>
+          </div>
+          <a href="/bookings" className="btn btn-primary">
+            Manage bookings
+          </a>
+        </section>
+      )}
+
+      {profile && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+          <div>
             <h2 className="text-lg font-semibold text-white">Driver verification</h2>
             <p className="mt-1 text-sm text-slate-400">Submit your driver license to get verified and start renting.</p>
           </div>
           <a href="/verification" className="btn btn-primary">
-            Manage
+            Manage Verification
           </a>
         </section>
       )}

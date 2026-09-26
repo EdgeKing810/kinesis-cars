@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AppProvider, ApiError, useApp, type Vehicle, type VehicleFetchResponse } from '../../context/AppContext';
+import {
+	AppProvider,
+	ApiError,
+	useApp,
+	type Blockout,
+	type BlockoutFetchResponse,
+	type Vehicle,
+	type VehicleFetchResponse,
+} from '../../context/AppContext';
+import { isVehicleAvailable } from '../../lib/availability';
 import { BODY_TYPES, CAR_MAKES, FUEL_TYPES, LOCATIONS, TRANSMISSIONS, formatPrice, humanize } from '../../lib/vehicles';
 import { useMinDelay } from '../../lib/useMinDelay';
 import Skeleton from './Skeleton';
@@ -9,11 +18,11 @@ type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'mileage-asc' | 'mileage-
 
 const selectClass = 'select select-bordered select-sm w-full';
 
-function CarImage({ vehicle }: { vehicle: Vehicle }) {
+function CarImage({ vehicle, available }: { vehicle: Vehicle; available: boolean }) {
 	const url = (vehicle.pictures ?? []).find((p) => p && (p.startsWith('http') || p.startsWith('/')));
 	const usable = url !== undefined;
 	return (
-		<div className="flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+		<div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
 			{usable ? (
 				<img src={url} alt={`${vehicle.car_make} ${vehicle.model}`} className="h-full w-full object-cover" />
 			) : (
@@ -24,15 +33,23 @@ function CarImage({ vehicle }: { vehicle: Vehicle }) {
 					<circle cx="17" cy="17" r="2" />
 				</svg>
 			)}
+			<span
+				className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${
+					available ? 'bg-emerald-500 text-slate-950' : 'bg-red-500/90 text-white'
+				}`}
+			>
+				{available ? 'Available' : 'Unavailable'}
+			</span>
 		</div>
 	);
 }
 
 function BrowseCarsInner() {
-	const { request } = useApp();
+	const { request, auth } = useApp();
 	const ready = useMinDelay(1000);
 
 	const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+	const [blockoutsByVehicle, setBlockoutsByVehicle] = useState<Record<string, Blockout[]>>({});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +58,7 @@ function BrowseCarsInner() {
 	const [transmission, setTransmission] = useState('');
 	const [fuel, setFuel] = useState('');
 	const [location, setLocation] = useState('');
+	const [availability, setAvailability] = useState<'all' | 'available' | 'unavailable'>('all');
 	const [search, setSearch] = useState('');
 	const [sort, setSort] = useState<SortKey>('newest');
 	const [page, setPage] = useState(0);
@@ -56,7 +74,7 @@ function BrowseCarsInner() {
 			if (fuel) params.set('fuel_type', fuel);
 			if (location) params.set('location', location);
 			const res = await request<VehicleFetchResponse>(`vehicle/fetch?${params}`);
-			setVehicles(res.fleets ?? []);
+			setVehicles(res.vehicles ?? []);
 			setPage(0);
 		} catch (err) {
 			setError(err instanceof ApiError ? err.message : 'Failed to load vehicles.');
@@ -69,8 +87,37 @@ function BrowseCarsInner() {
 		if (ready) fetchVehicles();
 	}, [ready, fetchVehicles]);
 
+	// Fetch all active blockouts (when signed in) to reflect real availability.
+	useEffect(() => {
+		if (!auth) {
+			setBlockoutsByVehicle({});
+			return;
+		}
+		(async () => {
+			try {
+				const res = await request<BlockoutFetchResponse>(
+					`blockout/fetch?id=${encodeURIComponent(auth.id)}&active=true&limit=100&offset=0`,
+				);
+				const grouped: Record<string, Blockout[]> = {};
+				for (const b of res.blockouts ?? []) {
+					(grouped[b.vehicle_id] ??= []).push(b);
+				}
+				setBlockoutsByVehicle(grouped);
+			} catch {
+				setBlockoutsByVehicle({});
+			}
+		})();
+	}, [auth, request]);
+
+	const isBookable = useCallback(
+		(v: Vehicle) => isVehicleAvailable(v, blockoutsByVehicle[v.id] ?? []),
+		[blockoutsByVehicle],
+	);
+
 	const filtered = useMemo(() => {
 		let list = vehicles;
+		if (availability === 'available') list = list.filter((v) => isBookable(v));
+		else if (availability === 'unavailable') list = list.filter((v) => !isBookable(v));
 		const q = search.trim().toLowerCase();
 		if (q) {
 			list = list.filter(
@@ -101,7 +148,7 @@ function BrowseCarsInner() {
 				sorted.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
 		}
 		return sorted;
-	}, [vehicles, search, sort]);
+	}, [vehicles, search, sort, availability, isBookable]);
 
 	const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const current = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -112,19 +159,20 @@ function BrowseCarsInner() {
 		setTransmission('');
 		setFuel('');
 		setLocation('');
+		setAvailability('all');
 		setSearch('');
 		setSort('newest');
 		setPage(0);
 	}
 
-	const hasFilters = make || body || transmission || fuel || location;
+	const hasFilters = make || body || transmission || fuel || location || availability !== 'all';
 
 	return (
 		<div className="space-y-6">
 			{/* Filter bar */}
 			<section className="rounded-3xl border border-white/10 bg-slate-900/50 p-6">
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-					<div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+					<div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
 						<label className="block">
 							<span className="text-xs font-medium uppercase tracking-wide text-slate-500">Make</span>
 							<select value={make} onChange={(e) => setMake(e.target.value)} className={selectClass}>
@@ -168,6 +216,18 @@ function BrowseCarsInner() {
 								{LOCATIONS.map((l) => (
 									<option key={l} value={l}>{humanize(l)}</option>
 								))}
+							</select>
+						</label>
+						<label className="block">
+							<span className="text-xs font-medium uppercase tracking-wide text-slate-500">Availability</span>
+							<select
+								value={availability}
+								onChange={(e) => setAvailability(e.target.value as 'all' | 'available' | 'unavailable')}
+								className={selectClass}
+							>
+								<option value="all">All</option>
+								<option value="available">Available</option>
+								<option value="unavailable">Unavailable</option>
 							</select>
 						</label>
 					</div>
@@ -241,7 +301,7 @@ function BrowseCarsInner() {
 								href={`/car?id=${encodeURIComponent(v.id)}`}
 								className="group block overflow-hidden rounded-2xl border border-white/10 bg-slate-900/50 transition hover:border-brand-500/40"
 							>
-								<CarImage vehicle={v} />
+								<CarImage vehicle={v} available={isBookable(v)} />
 								<div className="p-5">
 									<div className="flex items-start justify-between gap-3">
 										<div>
@@ -262,11 +322,6 @@ function BrowseCarsInner() {
 
 									<div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 text-xs text-slate-400">
 										<span>{v.seats} seats · {v.doors} doors · {v.mileage_km.toLocaleString()} km</span>
-										{v.is_active ? (
-											<span className="font-medium text-emerald-400">Available</span>
-										) : (
-											<span className="font-medium text-slate-500">Unavailable</span>
-										)}
 									</div>
 								</div>
 							</a>

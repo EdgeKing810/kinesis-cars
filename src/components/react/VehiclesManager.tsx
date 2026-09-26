@@ -13,6 +13,7 @@ import { useMinDelay } from '../../lib/useMinDelay';
 import { formatPrice, humanize } from '../../lib/vehicles';
 import Skeleton from './Skeleton';
 import VehicleForm, { type VehicleFormProps } from './VehicleForm';
+import VehicleBlockouts from './VehicleBlockouts';
 
 function VehiclesManagerInner() {
 	const { auth, request } = useApp();
@@ -30,6 +31,7 @@ function VehiclesManagerInner() {
 
 	const [showForm, setShowForm] = useState(false);
 	const [editing, setEditing] = useState<Vehicle | null>(null);
+	const [blockoutsVehicleId, setBlockoutsVehicleId] = useState<string | null>(null);
 
 	const loadData = useCallback(async () => {
 		if (!auth) return;
@@ -41,7 +43,7 @@ function VehiclesManagerInner() {
 				request<VehicleFetchResponse>('vehicle/fetch?limit=100&offset=0'),
 			]);
 			setFleets((fleetRes.fleets ?? []).filter((f) => f.owner_id === auth.id));
-			setVehicles((vehicleRes.fleets ?? []).filter((v) => v.owner_id === auth.id));
+			setVehicles((vehicleRes.vehicles ?? []).filter((v) => v.owner_id === auth.id));
 		} catch (err) {
 			setError(err instanceof ApiError ? err.message : 'Failed to load data.');
 		} finally {
@@ -222,6 +224,7 @@ function VehiclesManagerInner() {
 				{!loading && vehicles.length > 0 && (
 					<div className="space-y-3">
 						{vehicles.map((v) => (
+							<>
 							<div key={v.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-slate-950/60 p-5">
 								<div>
 									<div className="flex flex-wrap items-center gap-3">
@@ -243,11 +246,25 @@ function VehiclesManagerInner() {
 								</div>
 								<div className="flex items-center gap-3">
 									<span className="text-sm font-semibold text-brand-400">{formatPrice(v.price_per_day_cents)}</span>
+									<button
+										type="button"
+										onClick={() => setBlockoutsVehicleId(blockoutsVehicleId === v.id ? null : v.id)}
+										className="btn btn-outline btn-info btn-sm"
+									>
+										Blockouts
+									</button>
 									<button type="button" onClick={() => openEdit(v)} className="btn btn-outline btn-secondary btn-sm">
 										Edit
 									</button>
 								</div>
 							</div>
+							{blockoutsVehicleId === v.id && (
+								<VehicleBlockouts
+									vehicle={v}
+									onClose={() => setBlockoutsVehicleId(null)}
+								/>
+							)}
+							</>
 						))}
 					</div>
 				)}

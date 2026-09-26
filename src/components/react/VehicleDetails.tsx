@@ -3,6 +3,8 @@ import {
 	AppProvider,
 	ApiError,
 	useApp,
+	type Blockout,
+	type BlockoutFetchResponse,
 	type Fleet,
 	type FleetFetchResponse,
 	type Vehicle,
@@ -10,7 +12,9 @@ import {
 } from '../../context/AppContext';
 import { useMinDelay } from '../../lib/useMinDelay';
 import { formatPrice, humanize } from '../../lib/vehicles';
+import { findBlockingBlockout } from '../../lib/availability';
 import Skeleton from './Skeleton';
+import BookingPanel from './BookingPanel';
 
 type Status = 'loading' | 'error' | 'done';
 
@@ -24,7 +28,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 function VehicleDetailsInner() {
-	const { request } = useApp();
+	const { request, auth } = useApp();
 	const ready = useMinDelay(1000);
 
 	const [status, setStatus] = useState<Status>('loading');
@@ -33,6 +37,7 @@ function VehicleDetailsInner() {
 	const [fleet, setFleet] = useState<Fleet | null>(null);
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [lightboxOpen, setLightboxOpen] = useState(false);
+	const [activeBlockouts, setActiveBlockouts] = useState<Blockout[]>([]);
 
 	useEffect(() => {
 		const id = new URLSearchParams(window.location.search).get('id');
@@ -46,7 +51,7 @@ function VehicleDetailsInner() {
 				const res = await request<VehicleFetchResponse>(
 					`vehicle/fetch?vehicle_id=${encodeURIComponent(id)}&limit=1&offset=0`,
 				);
-				const v = res.fleets?.[0] ?? null;
+				const v = res.vehicles?.[0] ?? null;
 				if (!v) {
 					setStatus('error');
 					setError('Vehicle not found.');
@@ -71,6 +76,20 @@ function VehicleDetailsInner() {
 			}
 		})();
 	}, [request]);
+
+	useEffect(() => {
+		if (!auth || !vehicle) return;
+		(async () => {
+			try {
+				const res = await request<BlockoutFetchResponse>(
+					`blockout/fetch?id=${encodeURIComponent(auth.id)}&vehicle_id=${encodeURIComponent(vehicle.id)}&active=true&limit=10&offset=0`,
+				);
+				setActiveBlockouts(res.blockouts ?? []);
+			} catch {
+				setActiveBlockouts([]);
+			}
+		})();
+	}, [auth, vehicle, request]);
 
 	if (!ready || status === 'loading') {
 		return (
@@ -107,6 +126,10 @@ function VehicleDetailsInner() {
 
 	const opts = (vehicle.options ?? []).map((s) => s.trim()).filter(Boolean);
 	const addl = (vehicle.additional ?? []).map((s) => s.trim()).filter(Boolean);
+
+	const blockout = findBlockingBlockout(vehicle, activeBlockouts);
+	const isBlocked = blockout !== null;
+	const bookable = vehicle.is_active && !isBlocked;
 
 	return (
 		<>
@@ -189,22 +212,44 @@ function VehicleDetailsInner() {
 							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">{humanize(vehicle.fuel_type)}</span>
 							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">{humanize(vehicle.transmission)}</span>
 							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">{vehicle.location}</span>
-							{vehicle.is_active ? (
-								<span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300">Available</span>
+							{bookable ? (
+								<span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950">Available</span>
 							) : (
-								<span className="rounded-full border border-slate-500/30 bg-slate-500/15 px-3 py-1 text-xs font-medium text-slate-400">Unavailable</span>
+								<span className="rounded-full bg-slate-600/40 px-3 py-1 text-xs font-semibold text-slate-300">Unavailable</span>
 							)}
 						</div>
 
-						{vehicle.is_active ? (
-							<div className="mt-6 rounded-2xl border border-brand-500/20 bg-brand-500/10 p-5">
-								<p className="text-sm text-slate-300">
-									Rent from <span className="font-semibold text-white">{formatPrice(vehicle.price_per_day_cents)}</span>,{' '}
-									minimum {vehicle.min_rent_days} day{vehicle.min_rent_days !== 1 ? 's' : ''}
-									{vehicle.max_rent_days < 999 && ` up to ${vehicle.max_rent_days} days`}.
+						{isBlocked ? (
+							<div className="mt-6 rounded-2xl border border-red-400/30 bg-red-400/10 p-5">
+								<p className="text-sm font-medium text-red-300">
+									Unavailable —{' '}
+									{blockout?.reason !== 'BOOKING'
+										? (blockout?.reason ?? 'unavailable').toLowerCase().replace('_', ' ')
+										: 'booked'}
+									{blockout?.end_date ? ` until ${new Date(blockout.end_date).toLocaleString()}` : ''}
 								</p>
-								<a href="/register" className="btn btn-primary btn-sm mt-4">Book this car</a>
+								{blockout?.note && <p className="mt-1 text-sm text-red-200/80">{blockout.note}</p>}
 							</div>
+						) : bookable ? (
+							auth ? (
+								<div className="mt-6">
+									<BookingPanel vehicle={vehicle} />
+								</div>
+							) : (
+								<div className="mt-6 rounded-2xl border border-brand-500/20 bg-brand-500/10 p-5">
+									<p className="text-sm text-slate-300">
+										Rent from <span className="font-semibold text-white">{formatPrice(vehicle.price_per_day_cents)}</span>,{' '}
+										minimum {vehicle.min_rent_days} day{vehicle.min_rent_days !== 1 ? 's' : ''}
+										{vehicle.max_rent_days < 999 && ` up to ${vehicle.max_rent_days} days`}.
+									</p>
+									<a
+										href={`/login?next=/car?id=${encodeURIComponent(vehicle.id)}`}
+										className="btn btn-primary btn-sm mt-4"
+									>
+										Sign in to book
+									</a>
+								</div>
+							)
 						) : (
 							<p className="mt-6 rounded-2xl border border-slate-500/20 bg-slate-500/10 p-5 text-sm text-slate-400">
 								This vehicle is currently unavailable for rental.
