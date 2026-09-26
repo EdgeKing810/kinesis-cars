@@ -7,7 +7,7 @@ type Status = 'loading' | 'success' | 'error';
 
 function EmailVerificationInner() {
 	const { request } = useApp();
-	const minElapsed = useMinDelay(1000);
+	const minElapsed = useMinDelay(450);
 	const [status, setStatus] = useState<Status>('loading');
 	const [message, setMessage] = useState('');
 

@@ -15,7 +15,7 @@ const inputClass = 'input input-bordered mt-2 w-full';
 
 function FleetsManagerInner() {
 	const { auth, request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [checking, setChecking] = useState(true);
 	const [allowed, setAllowed] = useState(false);

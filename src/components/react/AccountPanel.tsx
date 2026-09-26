@@ -39,7 +39,7 @@ function InitialsAvatar({ name }: { name: string }) {
 
 function AccountPanelInner() {
   const { auth, request, logout } = useApp();
-  const ready = useMinDelay(1000);
+  const ready = useMinDelay(450);
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ message: string; sessionExpired?: boolean } | null>(null);

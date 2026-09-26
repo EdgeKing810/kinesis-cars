@@ -8,7 +8,7 @@ const inputClass =
 
 function ForgotPasswordInner() {
 	const { request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [authData, setAuthData] = useState('');
 	const [errors, setErrors] = useState<Record<string, string>>({});

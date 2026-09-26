@@ -55,7 +55,7 @@ function Initials({ name }: { name: string }) {
 function AdminUsersInner() {
 	const { auth, request } = useApp();
 
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 	const [checking, setChecking] = useState(true);
 	const [isAdmin, setIsAdmin] = useState(false);
 	const [accessError, setAccessError] = useState<string | null>(null);
@@ -170,7 +170,7 @@ function AdminUsersInner() {
 		setKycMessage(null);
 		setKycLoading(true);
 		setKycMinElapsed(false);
-		window.setTimeout(() => setKycMinElapsed(true), 1000);
+		window.setTimeout(() => setKycMinElapsed(true), 450);
 		try {
 			const res = await request<VerificationFetchResponse>(
 				`user/verification/fetch?id=${encodeURIComponent(auth.id)}&target_id=${encodeURIComponent(user.id)}`,

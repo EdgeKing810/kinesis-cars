@@ -51,7 +51,7 @@ function initialParam(key: string): string {
 
 function BrowseCarsInner() {
 	const { request, auth } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 	const [blockoutsByVehicle, setBlockoutsByVehicle] = useState<Record<string, Blockout[]>>({});

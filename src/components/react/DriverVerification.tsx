@@ -78,7 +78,7 @@ function ImageUploadField({
 
 function DriverVerificationInner() {
 	const { auth, request, upload, mediaUrlFromUpload } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [existing, setExisting] = useState<DriverVerification | null>(null);
 	const [loaded, setLoaded] = useState(false);

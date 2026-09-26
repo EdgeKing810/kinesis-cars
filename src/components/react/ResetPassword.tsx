@@ -9,7 +9,7 @@ const inputClass =
 
 function ResetPasswordInner() {
 	const { request } = useApp();
-	const minElapsed = useMinDelay(1000);
+	const minElapsed = useMinDelay(450);
 
 	const [params, setParams] = useState<{ id: string; token: string } | null>(null);
 	const [password, setPassword] = useState('');

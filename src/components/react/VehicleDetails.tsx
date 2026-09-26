@@ -29,7 +29,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 function VehicleDetailsInner() {
 	const { request, auth } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [status, setStatus] = useState<Status>('loading');
 	const [error, setError] = useState('');

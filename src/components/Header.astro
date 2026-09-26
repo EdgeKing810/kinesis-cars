@@ -1,6 +1,7 @@
 ---
 import AuthNav from './react/AuthNav.tsx';
 import ForMerchantsLink from './react/ForMerchantsLink.tsx';
+import MobileMenu from './react/MobileMenu.tsx';
 ---
 <header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur">
 	<nav class="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6" aria-label="Primary">
@@ -10,10 +11,12 @@ import ForMerchantsLink from './react/ForMerchantsLink.tsx';
 		</a>
 
 		<div class="hidden items-center gap-6 justify-self-center text-sm font-medium text-slate-300 md:flex">
+			<a href="/browse" class="transition hover:text-white">Browse cars</a>
 			<ForMerchantsLink client:load />
 		</div>
 
-		<div class="justify-self-end">
+		<div class="flex items-center justify-self-end gap-1">
+			<MobileMenu client:load />
 			<AuthNav client:load />
 		</div>
 	</nav>

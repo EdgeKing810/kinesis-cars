@@ -17,7 +17,7 @@ import VehicleBlockouts from './VehicleBlockouts';
 
 function VehiclesManagerInner() {
 	const { auth, request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [checking, setChecking] = useState(true);
 	const [allowed, setAllowed] = useState(false);

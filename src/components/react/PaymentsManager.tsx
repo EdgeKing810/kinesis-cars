@@ -29,7 +29,7 @@ function StatusBadge({ status }: { status: PaymentTransaction['status'] }) {
 
 function PaymentsManagerInner() {
 	const { auth, request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 	const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);

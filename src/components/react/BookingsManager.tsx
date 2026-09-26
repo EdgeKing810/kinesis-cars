@@ -48,7 +48,7 @@ function formatDate(iso: string): string {
 
 function BookingsManagerInner() {
 	const { auth, request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 
 	const [bookings, setBookings] = useState<Booking[]>([]);
 	const [vehicles, setVehicles] = useState<Record<string, string>>({});

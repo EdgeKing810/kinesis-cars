@@ -6,7 +6,7 @@ import Skeleton from './Skeleton';
 
 function FeaturedCarsInner() {
 	const { request } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 	const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 	const [error, setError] = useState<string | null>(null);
 

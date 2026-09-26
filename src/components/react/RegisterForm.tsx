@@ -41,7 +41,7 @@ function FleetIcon() {
 
 function RegisterFormInner() {
 	const { request, auth } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 	const [role, setRole] = useState<Role>('CLIENT');
 	const [name, setName] = useState('');
 	const [username, setUsername] = useState('');

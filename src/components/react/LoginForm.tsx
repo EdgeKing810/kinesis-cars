@@ -5,7 +5,7 @@ import Skeleton from './Skeleton';
 
 function LoginFormInner() {
 	const { login, auth } = useApp();
-	const ready = useMinDelay(1000);
+	const ready = useMinDelay(450);
 	const [authData, setAuthData] = useState('');
 	const [password, setPassword] = useState('');
 	const [otpCode, setOtpCode] = useState('');
