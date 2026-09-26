@@ -19,6 +19,7 @@ services:
         PUBLIC_API_URL: "${PUBLIC_API_URL:-https://api.kinesis.world/x/cars/}"
         PUBLIC_MEDIA_ORIGIN: "${PUBLIC_MEDIA_ORIGIN:-https://api.kinesis.world}"
         PUBLIC_UPLOAD_ORIGIN: "${PUBLIC_UPLOAD_ORIGIN:-}"
+        PUBLIC_STRIPE_PUBLISHABLE_KEY: "${PUBLIC_STRIPE_PUBLISHABLE_KEY:-pk_test_51UJyZ5E2xZ1RP1YkW0khidIqjEsyLL35SINWEBy3oR7xGy1lyGECebponk5Ma2MzFfiVVLpxqEo7TbfQjXPrSS0O009uf6ZM26}"
     network_mode: "bridge"
     restart: "always"
     environment:

@@ -329,6 +329,48 @@ export interface BookingFetchResponse extends ApiEnvelope {
 	amount: number;
 }
 
+/** Response of POST /payment/intent. */
+export interface PaymentIntentResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+	session_id?: string;
+	client_secret?: string;
+}
+
+/** Response of PATCH /payment/refund. */
+export interface PaymentRefundResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	id: string;
+	refund_id?: string;
+	refund_status?: string;
+}
+
+/** A payment transaction. */
+export interface PaymentTransaction {
+	id: string;
+	booking_id: string;
+	user_id: string;
+	provider: string;
+	transaction_id: string;
+	client_secret: string;
+	amount_cents: number;
+	currency: string;
+	status: 'PENDING' | 'AUTHORIZED' | 'CAPTURED' | 'FAILED' | 'REFUNDED' | 'PARTIALLY_REFUNDED';
+	failure_reason: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+/** Response of GET /payment/fetch. NOTE: the array key is `bookings`. */
+export interface PaymentFetchResponse extends ApiEnvelope {
+	status: number;
+	message: string;
+	bookings: PaymentTransaction[];
+	amount: number;
+}
+
 function normalizeBaseUrl(raw: string): string {
 	const trimmed = raw.trim();
 	return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;

@@ -6,12 +6,15 @@ import {
 	type Booking,
 	type BookingFetchResponse,
 	type BookingMutationResponse,
+	type PaymentIntentResponse,
+	type PaymentRefundResponse,
 	type UserResponse,
 	type VehicleFetchResponse,
 } from '../../context/AppContext';
 import { useMinDelay } from '../../lib/useMinDelay';
 import { formatPrice, humanize } from '../../lib/vehicles';
 import Skeleton from './Skeleton';
+import StripeEmbeddedCheckout from './StripeEmbeddedCheckout';
 
 const STATUS_STYLES: Record<Booking['status'], string> = {
 	PENDING_PAYMENT: 'border-yellow-500/30 bg-yellow-500/15 text-yellow-300',
@@ -56,6 +59,14 @@ function BookingsManagerInner() {
 	const [message, setMessage] = useState<string | null>(null);
 	const [busyId, setBusyId] = useState<string | null>(null);
 	const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+	const [checkoutSecret, setCheckoutSecret] = useState<string | null>(null);
+	const [checkoutBookingId, setCheckoutBookingId] = useState<string | null>(null);
+	const [refundFor, setRefundFor] = useState<Booking | null>(null);
+	const [refundTxId, setRefundTxId] = useState('');
+	const [refundChargeId, setRefundChargeId] = useState('');
+	const [refunding, setRefunding] = useState(false);
+	const [refundError, setRefundError] = useState<string | null>(null);
+	const [refundResult, setRefundResult] = useState<string | null>(null);
 
 	const loadData = useCallback(async () => {
 		if (!auth) return;
@@ -116,6 +127,63 @@ function BookingsManagerInner() {
 		}
 	}
 
+	async function handlePay(bookingId: string) {
+		if (!auth) return;
+		setBusyId(bookingId);
+		setMessage(null);
+		setError(null);
+		try {
+			const res = await request<PaymentIntentResponse>('payment/intent', {
+				method: 'POST',
+				body: JSON.stringify({ id: auth.id, booking_id: bookingId }),
+			});
+			if (!res.client_secret) {
+				setError('No Stripe client secret was returned.');
+				return;
+			}
+			setCheckoutBookingId(bookingId);
+			setCheckoutSecret(res.client_secret);
+		} catch (err) {
+			setError(err instanceof ApiError ? err.message : 'Failed to start payment.');
+		} finally {
+			setBusyId(null);
+		}
+	}
+
+	function closeCheckout() {
+		setCheckoutSecret(null);
+		setCheckoutBookingId(null);
+		void loadData();
+	}
+
+	async function handleRefund() {
+		if (!auth || !refundFor) return;
+		setRefunding(true);
+		setRefundError(null);
+		setRefundResult(null);
+		try {
+			const res = await request<PaymentRefundResponse>('payment/refund', {
+				method: 'PATCH',
+				body: JSON.stringify({
+					id: auth.id,
+					transaction_id: refundTxId.trim(),
+					charge_id: refundChargeId.trim(),
+				}),
+			});
+			setRefundResult(res.message ?? 'Refund issued.');
+			void loadData();
+		} catch (err) {
+			setRefundError(err instanceof ApiError ? err.message : 'Refund failed.');
+		} finally {
+			setRefunding(false);
+		}
+	}
+
+	function handleCheckoutComplete() {
+		setMessage('Payment completed. Your booking has been updated.');
+		closeCheckout();
+	}
+
 	async function handleCancel(bookingId: string) {
 		if (!auth) return;
 		setBusyId(bookingId);
@@ -136,7 +204,7 @@ function BookingsManagerInner() {
 		}
 	}
 
-	if (!auth) {
+	if (ready && !checking && !auth) {
 		return (
 			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
 				<h1 className="text-2xl font-bold tracking-tight text-white">Bookings</h1>
@@ -157,8 +225,11 @@ function BookingsManagerInner() {
 		);
 	}
 
+	if (!auth) return null;
+
 	return (
-		<div className="space-y-6">
+		<>
+			<div className="space-y-6">
 			<section className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
 				<div className="flex flex-wrap items-center justify-between gap-4">
 					<div>
@@ -212,7 +283,7 @@ function BookingsManagerInner() {
 											</p>
 										</div>
 
-										<div className="flex items-center gap-2">
+										<div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
 											{confirmCancelId === b.id ? (
 												<>
 													<span className="text-sm text-red-300">Cancel this booking?</span>
@@ -223,9 +294,19 @@ function BookingsManagerInner() {
 												</>
 											) : (
 												<>
+													{b.status === 'PENDING_PAYMENT' && b.client_id === auth.id && (
+														<button type="button" onClick={() => handlePay(b.id)} disabled={busyId === b.id} className="btn btn-primary btn-sm">
+															{busyId === b.id ? 'Redirecting…' : 'Pay now'}
+														</button>
+													)}
 													{canAdvance && next && (
 														<button type="button" onClick={() => handleAdvance(b)} disabled={busyId === b.id} className="btn btn-outline btn-secondary btn-sm">
 															{busyId === b.id ? '…' : `Advance to ${next}`}
+														</button>
+													)}
+													{canAdvance && b.status === 'CONFIRMED' && (
+														<button type="button" onClick={() => setRefundFor(b)} className="btn btn-outline btn-error btn-sm">
+															Refund
 														</button>
 													)}
 													{cancellable && (
@@ -255,6 +336,71 @@ function BookingsManagerInner() {
 				)}
 			</section>
 		</div>
+
+		{refundFor && (
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+				<div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-6">
+					<div className="mb-4 flex items-center justify-between">
+						<h2 className="text-lg font-semibold text-white">Refund booking</h2>
+						<button type="button" onClick={() => setRefundFor(null)} className="btn btn-ghost btn-sm">
+							Close
+						</button>
+					</div>
+
+					{refundResult ? (
+						<div>
+							<p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{refundResult}</p>
+							<button type="button" onClick={() => setRefundFor(null)} className="btn btn-primary btn-sm mt-4">
+								Done
+							</button>
+						</div>
+					) : (
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								void handleRefund();
+							}}
+							className="space-y-4"
+						>
+							<label className="block">
+								<span className="text-sm font-medium text-slate-300">Transaction ID</span>
+								<input type="text" value={refundTxId} onChange={(e) => setRefundTxId(e.target.value)} placeholder="e.g. SopCIs-…" required className="input input-bordered mt-1 w-full" />
+							</label>
+							<label className="block">
+								<span className="text-sm font-medium text-slate-300">Stripe charge ID</span>
+								<input type="text" value={refundChargeId} onChange={(e) => setRefundChargeId(e.target.value)} placeholder="e.g. ch_3UK…" required className="input input-bordered mt-1 w-full" />
+							</label>
+							{refundError && <p className="text-sm text-red-300">{refundError}</p>}
+							<button type="submit" disabled={refunding} className="btn btn-error w-full disabled:opacity-60">
+								{refunding ? 'Refunding…' : 'Issue full refund'}
+							</button>
+						</form>
+					)}
+				</div>
+			</div>
+		)}
+
+		{checkoutSecret && (
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+				<div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900 p-6">
+					<div className="mb-4 flex items-center justify-between">
+						<h2 className="text-lg font-semibold text-white">Complete your payment</h2>
+						<button
+							type="button"
+							onClick={closeCheckout}
+							className="btn btn-ghost btn-sm"
+						>
+							Close
+						</button>
+					</div>
+					<StripeEmbeddedCheckout clientSecret={checkoutSecret} onComplete={handleCheckoutComplete} />
+					{checkoutBookingId && (
+						<p className="mt-4 text-xs text-slate-500">Booking ID: {checkoutBookingId}</p>
+					)}
+				</div>
+			</div>
+		)}
+		</>
 	);
 }
 

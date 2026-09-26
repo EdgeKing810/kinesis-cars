@@ -44,6 +44,11 @@ function CarImage({ vehicle, available }: { vehicle: Vehicle; available: boolean
 	);
 }
 
+function initialParam(key: string): string {
+	if (typeof window === 'undefined') return '';
+	return new URLSearchParams(window.location.search).get(key) ?? '';
+}
+
 function BrowseCarsInner() {
 	const { request, auth } = useApp();
 	const ready = useMinDelay(1000);
@@ -53,11 +58,11 @@ function BrowseCarsInner() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const [make, setMake] = useState('');
-	const [body, setBody] = useState('');
-	const [transmission, setTransmission] = useState('');
-	const [fuel, setFuel] = useState('');
-	const [location, setLocation] = useState('');
+	const [make, setMake] = useState(() => initialParam('make'));
+	const [body, setBody] = useState(() => initialParam('body'));
+	const [transmission, setTransmission] = useState(() => initialParam('transmission'));
+	const [fuel, setFuel] = useState(() => initialParam('fuel_type'));
+	const [location, setLocation] = useState(() => initialParam('location'));
 	const [availability, setAvailability] = useState<'all' | 'available' | 'unavailable'>('all');
 	const [search, setSearch] = useState('');
 	const [sort, setSort] = useState<SortKey>('newest');

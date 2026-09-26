@@ -87,10 +87,10 @@ export const FUEL_TYPES = ['PETROL', 'DIESEL', 'HYBRID_PETROL', 'HYBRID_DIESEL',
 
 export const LOCATIONS = ['NORTH', 'SOUTH', 'EAST', 'WEST', 'CENTER'] as const;
 
-/** Format cents into a display price in Mauritian Rupees, e.g. 30000 -> "Rs 300/day". */
+/** Format cents into a display price in Mauritian Rupees, e.g. 30000 -> "Rs 300". */
 export function formatPrice(cents: number): string {
-  const rupees = Math.round(cents / 100).toLocaleString();
-  return `Rs ${rupees}/day`;
+	const rupees = Math.round(cents / 100).toLocaleString();
+	return `Rs ${rupees}`;
 }
 
 /** Human label for a snake_case enum, e.g. SMALL_CAR -> "Small car". */
