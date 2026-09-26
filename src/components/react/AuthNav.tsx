@@ -20,18 +20,11 @@ function AuthNavInner() {
 
 	if (auth) {
 		return (
-			<div className="flex items-center gap-2">
-				<a
-					href="/account"
-					className="btn btn-ghost btn-sm hidden text-white hover:text-brand-300 sm:inline-flex"
-				>
+			<div className="hidden items-center gap-2 sm:flex">
+				<a href="/account" className="btn btn-ghost btn-sm text-white hover:text-brand-300">
 					Account
 				</a>
-				<button
-					type="button"
-					onClick={handleSignOut}
-					className="btn btn-outline btn-error btn-sm"
-				>
+				<button type="button" onClick={handleSignOut} className="btn btn-outline btn-error btn-sm">
 					Sign out
 				</button>
 			</div>
@@ -39,7 +32,7 @@ function AuthNavInner() {
 	}
 
 	return (
-		<div className="flex items-center gap-2">
+		<div className="hidden items-center gap-2 sm:flex">
 			<a href="/login" className="btn btn-outline btn-info btn-sm">
 				Sign in
 			</a>
