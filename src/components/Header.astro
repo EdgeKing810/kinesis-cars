@@ -1,6 +1,5 @@
 ---
 import AuthNav from './react/AuthNav.tsx';
-import ForMerchantsLink from './react/ForMerchantsLink.tsx';
 import MobileMenu from './react/MobileMenu.tsx';
 ---
 <header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur">
@@ -9,11 +8,6 @@ import MobileMenu from './react/MobileMenu.tsx';
 			<img src="/favicon.svg" alt="Kinesis Cars" width="28" height="28" class="h-7 w-7 rounded-lg" />
 			<span class="text-lg font-semibold tracking-tight text-white">Kinesis<span class="text-brand-500">Cars</span></span>
 		</a>
-
-		<div class="hidden items-center gap-6 text-sm font-medium text-slate-300 md:flex">
-			<a href="/browse" class="transition hover:text-white">Browse cars</a>
-			<ForMerchantsLink client:load />
-		</div>
 
 		<div class="flex shrink-0 items-center gap-1">
 			<MobileMenu client:load />

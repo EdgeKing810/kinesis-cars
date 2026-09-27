@@ -27,12 +27,13 @@ function MobileMenuInner() {
 				type="button"
 				onClick={() => setOpen((o) => !o)}
 				aria-label="Menu"
-				className="btn btn-ghost btn-sm text-white"
+				aria-expanded={open}
+				className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-slate-300 transition hover:border-white/30 hover:text-white"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-					<line x1="4" x2="20" y1="6" y2="6" />
-					<line x1="4" x2="20" y1="12" y2="12" />
-					<line x1="4" x2="20" y1="18" y2="18" />
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4">
+					<line x1="4" x2="20" y1="7" y2="7" />
+					<line x1="4" x2="14" y1="12" y2="12" />
+					<line x1="4" x2="20" y1="17" y2="17" />
 				</svg>
 			</button>
 
@@ -62,10 +63,10 @@ function MobileMenuInner() {
 						</button>
 					) : (
 						<>
-							<a href="/login" onClick={() => setOpen(false)} className={`${linkClass} font-medium text-brand-300`}>
+							<a href="/login" onClick={() => setOpen(false)} className="btn btn-outline btn-success px-3 py-2 font-semibold w-full">
 								Sign in
 							</a>
-							<a href="/register" onClick={() => setOpen(false)} className="mt-1 block rounded-lg bg-brand-500 px-3 py-2 text-center text-sm font-semibold text-white transition hover:bg-brand-400">
+							<a href="/register" onClick={() => setOpen(false)} className="mt-2 btn btn-outline btn-primary px-3 py-2 font-semibold w-full">
 								Get started
 							</a>
 						</>

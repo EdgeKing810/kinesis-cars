@@ -3,12 +3,46 @@
 A **car booking & fleet management platform** for Mauritius, hosted at
 `cars.kinesis.world`. Rent vehicles from verified merchants, or manage your own
 fleet — bookings, blockouts, driver verification and Stripe payments all
-handled end-to-end by the **Kinesis API** (`https://api.kinesis.world/x/cars/`).
+handled end-to-end by the **Kinesis API**.
+
+> **The entire platform is built on Kinesis API**
+> (`https://api.kinesis.world`). Every backend feature — authentication, users,
+> driver verification, fleets, vehicles, blockouts, bookings, payments,
+> email templates and more — is implemented by the Kinesis API, not by this
+> repository. This project is purely the **frontend** that consumes it.
+>
+> The complete API **endpoints & logic, sample data, email templates, and
+> reference material can be downloaded from the Kinesis API library**:
+> `https://api.kinesis.world/library`.
 
 The frontend is a static Astro site that talks directly to the Kinesis API from
 the browser. It is intentionally **framework-agnostic about the backend**: the
 API base URL is loaded from `.env` at build time, so the same build works
 against the local API during development and the production API when deployed.
+
+---
+
+## Architecture
+
+```text
+┌──────────────────────────┐         ┌───────────────────────────┐
+│  Kinesis Cars (this repo)│  HTTPS  │  Kinesis API              │
+│  Static Astro + React    │ ──────► │  https://api.kinesis.world │
+│  cars.kinesis.world      │  (JWT)  │  /x/cars/...              │
+└──────────────────────────┘         └───────────────────────────┘
+        │                                    │
+        │  Stripe.js (CDN)                   │  Stripe, media storage,
+        ▼                                    │  email, DB
+  Stripe Embedded Checkout                   ▼
+                                          Stripe / webhooks
+```
+
+- The browser calls the API directly with `Authorization: Bearer <jwt>`.
+- Media uploads go to `POST /upload` on the API host (proxied same-origin in
+  production so the API never needs CORS).
+- Stripe payments use **Embedded Checkout** (Stripe.js from Stripe's CDN);
+  Stripe webhooks keep bookings and their auto-generated `BOOKING` blockouts in
+  sync.
 
 ---
 
@@ -106,6 +140,26 @@ COMPLETED`; merchants/admins advance them, clients can cancel
 | Blockouts           | `POST /blockout/create` · `DELETE /blockout/delete` · `GET /blockout/fetch`                                                                                                                                                                                                   |
 | Bookings            | `POST /booking/create` · `PATCH /booking/status` · `PATCH /booking/cancel` · `GET /booking/fetch`                                                                                                                                                                             |
 | Payments            | `POST /payment/intent` · `PATCH /payment/refund` · `GET /payment/fetch`                                                                                                                                                                                                       |
+
+> All of these endpoints, their underlying logic, the **sample data**, and the
+> **email templates** (registration welcome, email verification, password reset,
+> etc.) can be downloaded from the Kinesis API library:
+> **`https://api.kinesis.world/library`**.
+
+### Kinesis API data model
+
+The platform's data is stored by the Kinesis API in the following collections;
+this frontend mirrors them one-to-one:
+
+| Collection            | Purpose                                                                                                                                                                                        | UI surface                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `users`               | All platform users with a role (`ADMIN`/`MERCHANT`/`CLIENT`), profile, email verification and 2FA state                                                                                        | Account, auth pages, admin user list   |
+| `driver_verification` | One driver-license verification record per user (`PENDING`/`APPROVED`/`REJECTED`) with private license images                                                                                  | `/verification`, admin KYC             |
+| `fleets`              | Merchant-owned groupings of vehicles                                                                                                                                                           | `/fleets`                              |
+| `vehicles`            | Vehicle listings with full specs (make, body, transmission, fuel, location, price in MUR cents, min/max rental days, options, pictures)                                                        | `/browse`, `/car`, `/vehicles`         |
+| `blockouts`           | Unavailable periods per vehicle (`BOOKING`/`MAINTENANCE`/`FLEET_HOLD`/`UNAVAILABLE`); auto-created for paid bookings and auto-cleared on refund/expiry                                         | vehicle blockouts, availability badges |
+| `bookings`            | Client bookings with pickup/dropoff, a financial snapshot and the status lifecycle (`PENDING_PAYMENT` → `CONFIRMED` → `CHECKED_OUT` → `CHECKED_IN` → `COMPLETED`, plus `CANCELLED`/`REFUNDED`) | `/bookings`, car page                  |
+| `payment_transaction` | Stripe payment records (`PENDING`/`AUTHORIZED`/`CAPTURED`/`FAILED`/`REFUNDED`/`PARTIALLY_REFUNDED`)                                                                                            | `/payments`, refunds                   |
 
 ---
 
