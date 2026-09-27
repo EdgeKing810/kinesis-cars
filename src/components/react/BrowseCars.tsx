@@ -78,41 +78,39 @@ function BrowseCarsInner() {
 			if (transmission) params.set('transmission', transmission);
 			if (fuel) params.set('fuel_type', fuel);
 			if (location) params.set('location', location);
-			const res = await request<VehicleFetchResponse>(`vehicle/fetch?${params}`);
-			setVehicles(res.vehicles ?? []);
+
+			// Fetch vehicles and active blockouts together so the availability
+			// badge is correct the moment the cards render.
+			const [vehicleRes, blockoutRes] = await Promise.all([
+				request<VehicleFetchResponse>(`vehicle/fetch?${params}`),
+				auth
+					? request<BlockoutFetchResponse>(
+							`blockout/fetch?id=${encodeURIComponent(auth.id)}&active=true&limit=100&offset=0`,
+						).catch(() => null)
+					: Promise.resolve(null),
+			]);
+
+			setVehicles(vehicleRes.vehicles ?? []);
+			if (blockoutRes) {
+				const grouped: Record<string, Blockout[]> = {};
+				for (const b of blockoutRes.blockouts ?? []) {
+					(grouped[b.vehicle_id] ??= []).push(b);
+				}
+				setBlockoutsByVehicle(grouped);
+			} else {
+				setBlockoutsByVehicle({});
+			}
 			setPage(0);
 		} catch (err) {
 			setError(err instanceof ApiError ? err.message : 'Failed to load vehicles.');
 		} finally {
 			setLoading(false);
 		}
-	}, [make, body, transmission, fuel, location, request]);
+	}, [make, body, transmission, fuel, location, request, auth]);
 
 	useEffect(() => {
 		if (ready) fetchVehicles();
 	}, [ready, fetchVehicles]);
-
-	// Fetch all active blockouts (when signed in) to reflect real availability.
-	useEffect(() => {
-		if (!auth) {
-			setBlockoutsByVehicle({});
-			return;
-		}
-		(async () => {
-			try {
-				const res = await request<BlockoutFetchResponse>(
-					`blockout/fetch?id=${encodeURIComponent(auth.id)}&active=true&limit=100&offset=0`,
-				);
-				const grouped: Record<string, Blockout[]> = {};
-				for (const b of res.blockouts ?? []) {
-					(grouped[b.vehicle_id] ??= []).push(b);
-				}
-				setBlockoutsByVehicle(grouped);
-			} catch {
-				setBlockoutsByVehicle({});
-			}
-		})();
-	}, [auth, request]);
 
 	const isBookable = useCallback(
 		(v: Vehicle) => isVehicleAvailable(v, blockoutsByVehicle[v.id] ?? []),
