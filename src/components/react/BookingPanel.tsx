@@ -65,6 +65,24 @@ export default function BookingPanel({ vehicle }: { vehicle: Vehicle }) {
 		}
 	}
 
+	if (!auth) {
+		return (
+			<div className="rounded-2xl border border-brand-500/20 bg-brand-500/10 p-5">
+				<p className="text-sm text-slate-300">
+					Rent from <span className="font-semibold text-white">{formatPrice(vehicle.price_per_day_cents)}</span>,{' '}
+					minimum {vehicle.min_rent_days} day{vehicle.min_rent_days !== 1 ? 's' : ''}
+					{vehicle.max_rent_days < 999 && ` up to ${vehicle.max_rent_days} days`}.
+				</p>
+				<a
+					href={`/login?next=/car?id=${encodeURIComponent(vehicle.id)}`}
+					className="btn btn-primary btn-sm mt-4"
+				>
+					Sign in to book
+				</a>
+			</div>
+		);
+	}
+
 	if (result) {
 		return (
 			<div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">

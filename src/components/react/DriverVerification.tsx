@@ -176,16 +176,6 @@ function DriverVerificationInner() {
 		})();
 	}
 
-	if (!auth) {
-		return (
-			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
-				<h1 className="text-2xl font-bold tracking-tight text-white">Driver verification</h1>
-				<p className="mt-2 text-sm text-slate-400">Sign in to submit your driver license for verification.</p>
-				<a href="/login" className="btn btn-primary mt-6">Sign in</a>
-			</div>
-		);
-	}
-
 	if (!ready) {
 		return (
 			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
@@ -194,6 +184,16 @@ function DriverVerificationInner() {
 				<Skeleton className="mt-6 h-11 w-full" />
 				<Skeleton className="mt-4 h-11 w-full" />
 				<Skeleton className="mt-4 h-16 w-full" />
+			</div>
+		);
+	}
+
+	if (!auth) {
+		return (
+			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
+				<h1 className="text-2xl font-bold tracking-tight text-white">Driver verification</h1>
+				<p className="mt-2 text-sm text-slate-400">Sign in to submit your driver license for verification.</p>
+				<a href="/login" className="btn btn-primary mt-6">Sign in</a>
 			</div>
 		);
 	}

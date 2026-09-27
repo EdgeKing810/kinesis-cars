@@ -54,22 +54,22 @@ function PaymentsManagerInner() {
 		if (ready) loadData();
 	}, [ready, loadData]);
 
-	if (!auth) {
-		return (
-			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
-				<h1 className="text-2xl font-bold tracking-tight text-white">Payments</h1>
-				<p className="mt-2 text-sm text-slate-400">Sign in to view your payment transactions.</p>
-				<a href="/login" className="btn btn-primary mt-6">Sign in</a>
-			</div>
-		);
-	}
-
 	if (!ready) {
 		return (
 			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
 				<Skeleton className="h-7 w-48" />
 				<Skeleton className="mt-4 h-16 w-full" />
 				<Skeleton className="mt-3 h-16 w-full" />
+			</div>
+		);
+	}
+
+	if (!auth) {
+		return (
+			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
+				<h1 className="text-2xl font-bold tracking-tight text-white">Payments</h1>
+				<p className="mt-2 text-sm text-slate-400">Sign in to view your payment transactions.</p>
+				<a href="/login" className="btn btn-primary mt-6">Sign in</a>
 			</div>
 		);
 	}

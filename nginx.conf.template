@@ -49,9 +49,12 @@ server {
     # Media uploads are proxied same-origin: the API doesn't send
     # `Access-Control-Allow-Origin`, so the browser posts to `/upload` on this
     # host and nginx forwards to the API (PUBLIC_UPLOAD_ORIGIN="" in prod).
-    location /upload {
+    location = /upload {
         proxy_pass https://api.kinesis.world;
         proxy_set_header Host api.kinesis.world;
+        # Send SNI for the upstream TLS handshake (api.kinesis.world is a
+        # hostname-based virtual host), otherwise the proxy connection fails.
+        proxy_ssl_server_name on;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
