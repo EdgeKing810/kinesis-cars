@@ -524,7 +524,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 				headers.set('Authorization', `Bearer ${auth.jwt}`);
 			}
 
-			const response = await fetch(`${uploadOrigin}/upload?security=${security}&project_id=cars`, {
+			const response = await fetch(`${uploadOrigin}/upload?security=${security}&project_id=kinesis_cars`, {
 				method: 'POST',
 				headers,
 				body: formData,
