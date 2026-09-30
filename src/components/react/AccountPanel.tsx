@@ -357,31 +357,31 @@ function AccountPanelInner() {
         </section>
       )}
 
-{(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
-				<section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
-					<div>
-						<h2 className="text-lg font-semibold text-white">Fleets</h2>
-						<p className="mt-1 text-sm text-slate-400">Group your vehicles into fleets for easy management.</p>
-					</div>
-					<a href="/fleets" className="btn btn-primary">
-						Manage fleets
-					</a>
-				</section>
-			)}
+      {(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Fleets</h2>
+            <p className="mt-1 text-sm text-slate-400">Group your vehicles into fleets for easy management.</p>
+          </div>
+          <a href="/fleets" className="btn btn-primary">
+            Manage fleets
+          </a>
+        </section>
+      )}
 
-			{(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
-				<section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
-					<div>
-						<h2 className="text-lg font-semibold text-white">Vehicles</h2>
-						<p className="mt-1 text-sm text-slate-400">List, add and manage the vehicles in your fleet.</p>
-					</div>
-					<a href="/vehicles" className="btn btn-primary">
-						Manage vehicles
-					</a>
-				</section>
-			)}
+      {(profile?.role === 'ADMIN' || profile?.role === 'MERCHANT') && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-8">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Vehicles</h2>
+            <p className="mt-1 text-sm text-slate-400">List, add and manage the vehicles in your fleet.</p>
+          </div>
+          <a href="/vehicles" className="btn btn-primary">
+            Manage vehicles
+          </a>
+        </section>
+      )}
 
-			{/* Security / two-factor */}
+      {/* Security / two-factor */}
       <section className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
         <h2 className="text-lg font-semibold text-white">Security</h2>
 
@@ -421,7 +421,7 @@ function AccountPanelInner() {
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-red-400/30 bg-red-400/10 p-5">
             <p className="text-sm text-red-200">Disable two-factor authentication for this account?</p>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setConfirmDisable(false)} className="btn btn-outline btn-sm">
+              <button type="button" onClick={() => setConfirmDisable(false)} className="btn btn-outline">
                 Cancel
               </button>
               <button

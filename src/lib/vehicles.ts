@@ -33,7 +33,7 @@ export const CAR_MAKES = [
   'KIA',
   'LAND_ROVER',
   'LEXUS',
-  'LOTOS',
+  'LOTUS',
   'MASERATI',
   'MAZDA',
   'MERCEDES_BENZ',
