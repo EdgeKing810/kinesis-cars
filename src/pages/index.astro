@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import FeaturedCars from '../components/react/FeaturedCars.tsx';
+import AuthAwareCTA from '../components/react/AuthAwareCTA.tsx';
 ---
 <Layout>
 	<!-- Hero -->
@@ -27,7 +28,14 @@ import FeaturedCars from '../components/react/FeaturedCars.tsx';
 
 			<div class="mt-8 flex flex-wrap items-center justify-center gap-4">
 				<a href="/browse" class="btn btn-primary btn-lg shadow-lg shadow-brand-600/25">Browse available cars</a>
-				<a href="/register" class="btn btn-outline btn-secondary btn-lg">I'm a merchant</a>
+				<AuthAwareCTA
+					signedOutHref="/register"
+					signedOutLabel="I'm a merchant"
+					signedInHref="/fleets"
+					signedInLabel="Manage my fleet"
+					className="btn btn-outline btn-secondary btn-lg"
+					client:load
+				/>
 			</div>
 		</div>
 	</section>
@@ -146,7 +154,14 @@ import FeaturedCars from '../components/react/FeaturedCars.tsx';
 					<li class="flex items-center gap-3"><span class="text-brand-400">✓</span> Transparent per-day pricing</li>
 					<li class="flex items-center gap-3"><span class="text-brand-400">✓</span> Bookings &amp; receipts in one place</li>
 				</ul>
-				<a href="/register" class="btn btn-outline btn-secondary mt-8">Create an account</a>
+				<AuthAwareCTA
+					signedOutHref="/register"
+					signedOutLabel="Create an account"
+					signedInHref="/browse"
+					signedInLabel="Browse cars"
+					className="btn btn-outline btn-secondary mt-8"
+					client:load
+				/>
 			</div>
 
 			<div class="rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-500/10 to-slate-950 p-8 sm:p-10">
@@ -160,7 +175,14 @@ import FeaturedCars from '../components/react/FeaturedCars.tsx';
 					<li class="flex items-center gap-3"><span class="text-brand-400">✓</span> Control vehicle availability</li>
 					<li class="flex items-center gap-3"><span class="text-brand-400">✓</span> Set pricing &amp; minimum rentals</li>
 				</ul>
-				<a href="/register" class="btn btn-primary mt-8">Start listing cars</a>
+				<AuthAwareCTA
+					signedOutHref="/register"
+					signedOutLabel="Start listing cars"
+					signedInHref="/fleets"
+					signedInLabel="Manage my fleet"
+					className="btn btn-primary mt-8"
+					client:load
+				/>
 			</div>
 		</div>
 	</section>

@@ -3,6 +3,7 @@ import { AppProvider, ApiError, useApp, type RegisterResponse } from '../../cont
 import { isValidEmail, isValidPassword, isValidUsername } from '../../lib/validation';
 import { useMinDelay } from '../../lib/useMinDelay';
 import Skeleton from './Skeleton';
+import PasswordInput from './PasswordInput';
 
 type Role = 'CLIENT' | 'MERCHANT';
 
@@ -254,11 +255,9 @@ function RegisterFormInner() {
 
       <label className="block">
         <span className="text-sm font-medium text-slate-300">Password</span>
-        <input
-          type="password"
-          name="password"
+        <PasswordInput
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           autoComplete="new-password"
           placeholder="1 lowercase, 1 uppercase, 1 symbol, 8+ characters"
           className={inputClass('password')}

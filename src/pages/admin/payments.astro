@@ -1,0 +1,21 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PaymentsManager from '../../components/react/PaymentsManager.tsx';
+---
+<Layout title="Payments — Admin — Kinesis Cars" description="View all payment transactions on the platform.">
+	<Fragment slot="head">
+		<script is:inline>
+			// Requires a session to view payments.
+			try {
+				if (!localStorage.getItem('kinesis.auth')) {
+					window.location.replace('/login?next=/admin/payments');
+				}
+			} catch (e) {
+				/* ignore */
+			}
+		</script>
+	</Fragment>
+	<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+		<PaymentsManager admin client:load />
+	</section>
+</Layout>

@@ -349,11 +349,16 @@ function AccountPanelInner() {
         <section className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-500/10 to-slate-950 p-8">
           <div>
             <h2 className="text-lg font-semibold text-white">Administrator</h2>
-            <p className="mt-1 text-sm text-slate-400">Manage users on the platform.</p>
+            <p className="mt-1 text-sm text-slate-400">Manage users and payments on the platform.</p>
           </div>
-          <a href="/admin/users" className="btn btn-primary">
-            Manage users
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a href="/admin/users" className="btn btn-primary">
+              Manage users
+            </a>
+            <a href="/admin/payments" className="btn btn-outline btn-secondary">
+              Payments
+            </a>
+          </div>
         </section>
       )}
 

@@ -2,6 +2,7 @@ import { useState, type SyntheticEvent } from 'react';
 import { AppProvider, ApiError, useApp } from '../../context/AppContext';
 import { useMinDelay } from '../../lib/useMinDelay';
 import Skeleton from './Skeleton';
+import PasswordInput from './PasswordInput';
 
 function LoginFormInner() {
 	const { login, auth } = useApp();
@@ -103,11 +104,9 @@ function LoginFormInner() {
 
 			<label className="block">
 				<span className="text-sm font-medium text-slate-300">Password</span>
-				<input
-					type="password"
-					name="password"
+				<PasswordInput
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					onChange={setPassword}
 					autoComplete="current-password"
 					placeholder="••••••••"
 					className={inputClass('password')}

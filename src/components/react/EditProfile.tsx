@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { ApiError, useApp, type User, type UserUpdateResponse } from '../../context/AppContext';
 import { isValidEmail, isValidPassword, isValidUsername } from '../../lib/validation';
+import PasswordInput from './PasswordInput';
 
 const inputClass = 'input input-bordered mt-1 w-full';
 
@@ -254,10 +255,9 @@ export default function EditProfile({ profile, onSaved }: { profile: User; onSav
         <div className="flex items-end gap-3">
           <label className="block flex-1">
             <span className="text-sm font-medium text-slate-300">New password</span>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               autoComplete="new-password"
               placeholder="1 lowercase, 1 uppercase, 1 symbol, 8+ characters"
               className={errors.password ? `${inputClass} border-red-400/60` : inputClass}

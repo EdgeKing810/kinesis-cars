@@ -3,6 +3,7 @@ import { AppProvider, ApiError, useApp, type PasswordResetResponse } from '../..
 import { isValidPassword } from '../../lib/validation';
 import { useMinDelay } from '../../lib/useMinDelay';
 import Skeleton from './Skeleton';
+import PasswordInput from './PasswordInput';
 
 const inputClass =
 	'input input-bordered mt-2 w-full';
@@ -99,10 +100,9 @@ function ResetPasswordInner() {
 		<form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
 			<label className="block">
 				<span className="text-sm font-medium text-slate-300">New password</span>
-				<input
-					type="password"
+				<PasswordInput
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					onChange={setPassword}
 					autoComplete="new-password"
 					placeholder="1 lowercase, 1 uppercase, 1 symbol, 8+ characters"
 					className={errors.password ? `${inputClass} border-error` : inputClass}

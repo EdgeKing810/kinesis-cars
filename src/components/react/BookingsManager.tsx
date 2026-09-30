@@ -382,7 +382,7 @@ function BookingsManagerInner() {
 
 		{checkoutSecret && (
 			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-				<div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-slate-900 p-6">
+				<div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-slate-900 p-6">
 					<div className="mb-4 flex items-center justify-between">
 						<h2 className="text-lg font-semibold text-white">Complete your payment</h2>
 						<button

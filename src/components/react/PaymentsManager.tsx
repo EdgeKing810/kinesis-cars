@@ -5,6 +5,7 @@ import {
 	useApp,
 	type PaymentFetchResponse,
 	type PaymentTransaction,
+	type UserResponse,
 } from '../../context/AppContext';
 import { useMinDelay } from '../../lib/useMinDelay';
 import { formatPrice } from '../../lib/vehicles';
@@ -27,39 +28,70 @@ function StatusBadge({ status }: { status: PaymentTransaction['status'] }) {
 	);
 }
 
-function PaymentsManagerInner() {
+function PaymentsManagerInner({ admin = false }: { admin?: boolean }) {
 	const { auth, request } = useApp();
 	const ready = useMinDelay(450);
 	const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [role, setRole] = useState<string>('CLIENT');
+	const [checking, setChecking] = useState(admin);
+	const [userIdFilter, setUserIdFilter] = useState('');
 
 	const loadData = useCallback(async () => {
 		if (!auth) return;
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await request<PaymentFetchResponse>(
-				`payment/fetch?id=${encodeURIComponent(auth.id)}&limit=100&offset=0`,
-			);
+			const params = new URLSearchParams({ id: auth.id, limit: '100', offset: '0' });
+			if (admin) {
+				if (userIdFilter.trim()) params.set('user_id', userIdFilter.trim());
+			} else {
+				params.set('user_id', auth.id);
+			}
+			const res = await request<PaymentFetchResponse>(`payment/fetch?${params}`);
 			setTransactions(res.bookings ?? []);
 		} catch (err) {
 			setError(err instanceof ApiError ? err.message : 'Failed to load payment transactions.');
 		} finally {
 			setLoading(false);
 		}
-	}, [auth, request]);
+	}, [auth, request, admin, userIdFilter]);
 
 	useEffect(() => {
-		if (ready) loadData();
-	}, [ready, loadData]);
+		(async () => {
+			if (!auth || !admin) return;
+			try {
+				const me = await request<UserResponse>(`user/me?id=${encodeURIComponent(auth.id)}`);
+				setRole(me.user?.role ?? 'CLIENT');
+			} catch {
+				/* ignore */
+			} finally {
+				setChecking(false);
+			}
+		})();
+	}, [auth, request, admin]);
 
-	if (!ready) {
+	useEffect(() => {
+		if (ready && !checking) loadData();
+	}, [ready, checking, loadData]);
+
+	if (!ready || checking) {
 		return (
 			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
 				<Skeleton className="h-7 w-48" />
 				<Skeleton className="mt-4 h-16 w-full" />
 				<Skeleton className="mt-3 h-16 w-full" />
+			</div>
+		);
+	}
+
+	if (admin && role !== 'ADMIN') {
+		return (
+			<div className="rounded-3xl border border-white/10 bg-slate-900/50 p-8 text-center">
+				<h1 className="text-2xl font-bold tracking-tight text-white">Access denied</h1>
+				<p className="mt-2 text-sm text-slate-400">Only administrators can view all payment transactions.</p>
+				<a href="/" className="btn btn-outline mt-6">Back to home</a>
 			</div>
 		);
 	}
@@ -79,8 +111,14 @@ function PaymentsManagerInner() {
 			<section className="rounded-3xl border border-white/10 bg-slate-900/50 p-8">
 				<div className="flex flex-wrap items-center justify-between gap-4">
 					<div>
-						<h1 className="text-2xl font-bold tracking-tight text-white">Payment transactions</h1>
-						<p className="mt-1 text-sm text-slate-400">A history of payments made through the platform.</p>
+						<h1 className="text-2xl font-bold tracking-tight text-white">
+							{admin ? 'All payment transactions' : 'Payment transactions'}
+						</h1>
+						<p className="mt-1 text-sm text-slate-400">
+							{admin
+								? 'Every payment made across the platform.'
+								: 'A history of payments made through the platform.'}
+						</p>
 					</div>
 					<button
 						type="button"
@@ -91,6 +129,42 @@ function PaymentsManagerInner() {
 						Refresh
 					</button>
 				</div>
+
+				{admin && (
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							void loadData();
+						}}
+						className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
+					>
+						<label className="block flex-1 sm:max-w-xs">
+							<span className="text-xs font-medium uppercase tracking-wide text-slate-500">User ID</span>
+							<input
+								type="text"
+								value={userIdFilter}
+								onChange={(e) => setUserIdFilter(e.target.value)}
+								placeholder="Filter by user id (optional)"
+								className="input input-bordered input-sm mt-1 w-full"
+							/>
+						</label>
+						<button type="submit" className="btn btn-outline btn-secondary btn-sm">
+							Filter
+						</button>
+						{userIdFilter && (
+							<button
+								type="button"
+								onClick={() => {
+									setUserIdFilter('');
+									void loadData();
+								}}
+								className="btn btn-outline btn-error btn-sm"
+							>
+								Clear
+							</button>
+						)}
+					</form>
+				)}
 
 				{error && (
 					<p className="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-300">{error}</p>
@@ -131,10 +205,10 @@ function PaymentsManagerInner() {
 	);
 }
 
-export default function PaymentsManager() {
+export default function PaymentsManager({ admin = false }: { admin?: boolean }) {
 	return (
 		<AppProvider>
-			<PaymentsManagerInner />
+			<PaymentsManagerInner admin={admin} />
 		</AppProvider>
 	);
 }
